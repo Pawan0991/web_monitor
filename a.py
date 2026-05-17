@@ -15,21 +15,42 @@ import dateparser
 
 # Import URLs (path-robust for GitHub Actions/Linux)
 URL_LIST = None
+_urls_load_error = None
 try:
     from urls import URL_LIST as _URL_LIST
     URL_LIST = _URL_LIST
-except Exception:
+except Exception as e:
+    _urls_load_error = e
     try:
         import importlib.util
+        import ast
+
         script_dir = os.path.dirname(os.path.abspath(__file__))
         urls_path = os.path.join(script_dir, "urls.py")
         if os.path.exists(urls_path):
-            spec = importlib.util.spec_from_file_location("urls", urls_path)
-            module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(module)  # type: ignore
-            URL_LIST = getattr(module, "URL_LIST", None)
-    except Exception:
-        URL_LIST = None
+            # 1) Try executing module
+            try:
+                spec = importlib.util.spec_from_file_location("urls", urls_path)
+                module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(module)  # type: ignore
+                URL_LIST = getattr(module, "URL_LIST", None)
+            except Exception as e2:
+                _urls_load_error = e2
+
+            # 2) Fallback: parse URL_LIST literal from file without importing
+            if not URL_LIST:
+                src = open(urls_path, "r", encoding="utf-8", errors="replace").read()
+                tree = ast.parse(src, filename="urls.py")
+                for node in tree.body:
+                    if isinstance(node, ast.Assign):
+                        for target in node.targets:
+                            if isinstance(target, ast.Name) and target.id == "URL_LIST":
+                                URL_LIST = ast.literal_eval(node.value)
+                                break
+                    if URL_LIST:
+                        break
+    except Exception as e3:
+        _urls_load_error = e3
 
 if not URL_LIST:
     print("❌ Error: urls.py not found or URL_LIST missing.")
@@ -38,6 +59,8 @@ if not URL_LIST:
         print("Files:", sorted(os.listdir(os.getcwd()))[:200])
     except Exception:
         pass
+    if _urls_load_error:
+        print(f"urls.py load error: {type(_urls_load_error).__name__}: {_urls_load_error}")
     sys.exit(1)
 
 # --- CONFIGURATION ---
