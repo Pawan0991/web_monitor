@@ -45,6 +45,29 @@ if not URL_LIST:
         print(f"urls.py load error: {type(_urls_load_error).__name__}: {_urls_load_error}")
     sys.exit(1)
 
+def _canonical_source(value: str) -> str:
+    """
+    urls.py ke URL_LIST wali entries ko canonical form me laata hai,
+    taa ki compare karke decide kar sakein ki source valid hai ya nahi.
+    """
+    if not value:
+        return ""
+    value = str(value).strip()
+    if not value:
+        return ""
+
+    # If scheme missing, treat as hostname/path and grab first segment
+    if "://" not in value:
+        host = value.split("/")[0].strip()
+        return host.lower().replace("www.", "")
+
+    parsed = urlparse(value)
+    host = (parsed.netloc or "").strip()
+    return host.lower().replace("www.", "")
+
+
+ALLOWED_SOURCES = {s for s in (_canonical_source(u) for u in URL_LIST) if s}
+
 # --- CONFIGURATION ---
 load_dotenv("config.env")
 BOT_TOKEN = os.getenv("BOT_TOKEN")
@@ -467,16 +490,17 @@ async def process_url(sem, session, url, processed_hashes, date_counters, counte
                                 run_stats["skipped_duplicate"] += 1
                             continue
                         
-                        # DB me site_name ko strictly monitored/source URL rakho,
-                        # taa ki value hamesha urls.py (URL_LIST) se match ho.
-                        # (Domain-only store karne se internal links same site me mix lagte hain.)
-                        site_for_db = url.strip()
-
+                        domain = _canonical_source(url)
+                        if domain not in ALLOWED_SOURCES:
+                            async with counters_lock:
+                                run_stats["skipped_source_not_in_urls"] += 1
+                            continue
+                        
                         # URL se State pata karein
                         state_name = URL_STATE_MAP.get(url, "General")
                         
                         # Per-notification Telegram alerts disabled; only start/stop + summary is sent.
-                        saved = await send_data_to_php(session, state_name, site_for_db, title, date_display, full_link, last_date_display)
+                        saved = await send_data_to_php(session, state_name, domain, title, date_display, full_link, last_date_display)
                         if saved:
                             async with counters_lock:
                                 date_counters[date_display] = date_counters.get(date_display, 0) + 1
@@ -520,6 +544,7 @@ async def main():
         "skipped_filtered": 0,
         "skipped_no_link": 0,
         "skipped_invalid_href": 0,
+        "skipped_source_not_in_urls": 0,
         "errors": 0,
     }
 
