@@ -13,11 +13,31 @@ from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 import dateparser
 
-# Import URLs
+# Import URLs (path-robust for GitHub Actions/Linux)
+URL_LIST = None
 try:
-    from urls import URL_LIST
-except ImportError:
-    print("❌ Error: urls.py not found!")
+    from urls import URL_LIST as _URL_LIST
+    URL_LIST = _URL_LIST
+except Exception:
+    try:
+        import importlib.util
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        urls_path = os.path.join(script_dir, "urls.py")
+        if os.path.exists(urls_path):
+            spec = importlib.util.spec_from_file_location("urls", urls_path)
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)  # type: ignore
+            URL_LIST = getattr(module, "URL_LIST", None)
+    except Exception:
+        URL_LIST = None
+
+if not URL_LIST:
+    print("❌ Error: urls.py not found or URL_LIST missing.")
+    print(f"CWD: {os.getcwd()}")
+    try:
+        print("Files:", sorted(os.listdir(os.getcwd()))[:200])
+    except Exception:
+        pass
     sys.exit(1)
 
 # --- CONFIGURATION ---
