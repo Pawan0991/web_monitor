@@ -3,6 +3,7 @@ URL_LIST = [
     
 #By Job Shikhar Team
 "https://jobshikhar.in",
+"https://jobshikhar.in/category/latest-jobs/",
 # Pan India
 "https://cdn.digialm.com/EForms/configuredHtml/1258/95554/Index.html",
 "https://india.gov.in",
