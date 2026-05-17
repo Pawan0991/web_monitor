@@ -227,6 +227,7 @@ async def send_telegram_msg(session, site_name, title, date_str, direct_link):
 
 async def send_telegram_text(session, text):
     if not ENABLE_TELEGRAM:
+        logging.info("ℹ️ Telegram is disabled (ENABLE_TELEGRAM=0).")
         return
     if not BOT_TOKEN or not CHAT_ID:
         logging.warning("⚠️ Telegram enabled but BOT_TOKEN/CHAT_ID not set.")
@@ -234,9 +235,14 @@ async def send_telegram_text(session, text):
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
     payload = {"chat_id": CHAT_ID, "text": text}
     try:
-        await session.post(url, json=payload, timeout=10)
-    except:
-        pass
+        async with session.post(url, json=payload, timeout=10) as resp:
+            if resp.status == 200:
+                logging.info("📨 Telegram status: sent")
+                return
+            body = await resp.text()
+            logging.error(f"⚠️ Telegram failed: HTTP {resp.status} - {body[:200]}")
+    except Exception as e:
+        logging.error(f"⚠️ Telegram error: {type(e).__name__}: {e}")
 
 # --- STATE MAPPING LOADER ---
 def load_state_mapping():
@@ -515,6 +521,8 @@ async def main():
     }
 
     async with aiohttp.ClientSession(connector=connector) as session:
+        if ENABLE_TELEGRAM:
+            logging.info(f"ℹ️ Telegram enabled: {bool(BOT_TOKEN)} token / {bool(CHAT_ID)} chat_id")
         await send_telegram_text(session, "✅ Website monitor started.")
         try:
             tasks = []
