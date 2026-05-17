@@ -13,48 +13,28 @@ from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 import dateparser
 
-# Import URLs (path-robust for GitHub Actions/Linux)
-URL_LIST = None
-_urls_load_error = None
-try:
-    from urls import URL_LIST as _URL_LIST
-    URL_LIST = _URL_LIST
-except Exception as e:
-    _urls_load_error = e
-    try:
-        import importlib.util
-        import ast
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+URLS_PY_PATH = os.path.join(SCRIPT_DIR, "urls.py")
 
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        urls_path = os.path.join(script_dir, "urls.py")
-        if os.path.exists(urls_path):
-            # 1) Try executing module
-            try:
-                spec = importlib.util.spec_from_file_location("urls", urls_path)
-                module = importlib.util.module_from_spec(spec)
-                spec.loader.exec_module(module)  # type: ignore
-                URL_LIST = getattr(module, "URL_LIST", None)
-            except Exception as e2:
-                _urls_load_error = e2
+def load_url_list(urls_py_path):
+    import ast
+    if not os.path.exists(urls_py_path):
+        return None, FileNotFoundError(urls_py_path)
+    src = open(urls_py_path, "r", encoding="utf-8", errors="replace").read()
+    tree = ast.parse(src, filename="urls.py")
+    for node in tree.body:
+        if isinstance(node, ast.Assign):
+            for target in node.targets:
+                if isinstance(target, ast.Name) and target.id == "URL_LIST":
+                    return ast.literal_eval(node.value), None
+    return None, ValueError("URL_LIST assignment not found in urls.py")
 
-            # 2) Fallback: parse URL_LIST literal from file without importing
-            if not URL_LIST:
-                src = open(urls_path, "r", encoding="utf-8", errors="replace").read()
-                tree = ast.parse(src, filename="urls.py")
-                for node in tree.body:
-                    if isinstance(node, ast.Assign):
-                        for target in node.targets:
-                            if isinstance(target, ast.Name) and target.id == "URL_LIST":
-                                URL_LIST = ast.literal_eval(node.value)
-                                break
-                    if URL_LIST:
-                        break
-    except Exception as e3:
-        _urls_load_error = e3
+URL_LIST, _urls_load_error = load_url_list(URLS_PY_PATH)
 
 if not URL_LIST:
     print("❌ Error: urls.py not found or URL_LIST missing.")
     print(f"CWD: {os.getcwd()}")
+    print(f"urls.py path: {URLS_PY_PATH}")
     try:
         print("Files:", sorted(os.listdir(os.getcwd()))[:200])
     except Exception:
@@ -264,7 +244,7 @@ def load_state_mapping():
     mapping = {}
     current_state = "Pan India" # Default agar koi comment na mile
     try:
-        with open("urls.py", "r", encoding="utf-8") as f:
+        with open(URLS_PY_PATH, "r", encoding="utf-8", errors="replace") as f:
             for line in f:
                 line = line.strip()
                 if not line: continue
