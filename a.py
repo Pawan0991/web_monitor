@@ -45,6 +45,30 @@ if not URL_LIST:
         print(f"urls.py load error: {type(_urls_load_error).__name__}: {_urls_load_error}")
     sys.exit(1)
 
+def _normalize_url_for_match(u: str) -> str:
+    """
+    Normalize URL for strict matching against URL_LIST.
+    - Removes fragments
+    - Trims whitespace
+    - Drops trailing slash
+    - If scheme missing, assumes https:// for matching only
+    """
+    u = (u or "").strip()
+    if not u:
+        return ""
+
+    parsed = urlparse(u)
+    if not parsed.scheme and not parsed.netloc and parsed.path:
+        parsed = urlparse("https://" + u)
+
+    # Remove fragment; keep query because URL_LIST may contain it
+    rebuilt = parsed._replace(fragment="").geturl().strip()
+    if rebuilt.endswith("/") and len(rebuilt) > len(parsed.scheme) + 3:
+        rebuilt = rebuilt.rstrip("/")
+    return rebuilt
+
+_URL_LIST_NORMALIZED = {_normalize_url_for_match(u) for u in URL_LIST if _normalize_url_for_match(u)}
+
 # --- CONFIGURATION ---
 load_dotenv("config.env")
 BOT_TOKEN = os.getenv("BOT_TOKEN")
@@ -382,6 +406,13 @@ async def process_url(sem, session, url, processed_hashes, date_counters, counte
                         continue
                     
                     full_link = urljoin(url, href)
+                    # STRICT GUARD:
+                    # DB me sirf wahi links save karo jo urls.py (URL_LIST) me present hain.
+                    # Isse navigation/footer/internal links (e.g. refinery/pipelines) DB me nahi jayenge.
+                    if _normalize_url_for_match(full_link) not in _URL_LIST_NORMALIZED:
+                        async with counters_lock:
+                            run_stats["skipped_not_in_url_list"] += 1
+                        continue
 
                     # Extract Title
                     title = clean_text(link_tag.get_text())
@@ -467,13 +498,16 @@ async def process_url(sem, session, url, processed_hashes, date_counters, counte
                                 run_stats["skipped_duplicate"] += 1
                             continue
                         
-                        domain = urlparse(url).netloc.replace("www.", "")
-                        
+                        # DB me site_name ko strictly monitored/source URL rakho,
+                        # taa ki value hamesha urls.py (URL_LIST) se match ho.
+                        # (Domain-only store karne se internal links same site me mix lagte hain.)
+                        site_for_db = url.strip()
+
                         # URL se State pata karein
                         state_name = URL_STATE_MAP.get(url, "General")
                         
                         # Per-notification Telegram alerts disabled; only start/stop + summary is sent.
-                        saved = await send_data_to_php(session, state_name, domain, title, date_display, full_link, last_date_display)
+                        saved = await send_data_to_php(session, state_name, site_for_db, title, date_display, full_link, last_date_display)
                         if saved:
                             async with counters_lock:
                                 date_counters[date_display] = date_counters.get(date_display, 0) + 1
@@ -517,6 +551,7 @@ async def main():
         "skipped_filtered": 0,
         "skipped_no_link": 0,
         "skipped_invalid_href": 0,
+        "skipped_not_in_url_list": 0,
         "errors": 0,
     }
 
