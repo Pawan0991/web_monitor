@@ -1,11 +1,31 @@
 # url.py
-urls = [
+URL_LIST = [
+    
+#By Job Shikhar Team
 "https://jobshikhar.in",
+# Pan India
 "https://cdn.digialm.com/EForms/configuredHtml/1258/95554/Index.html",
 "https://india.gov.in",
 "https://www.mha.gov.in/en",
 "https://ssc.nic.in/Portal/Notices",
 "https://upsc.gov.in/recruitment/recruitment-advertisements",
+"https://cuet.nta.nic.in/",
+"https://indiapost.gov.in/gdsonlineengagement",
+"https://admissions.nic.in/admiss/admissions/notifications",
+"https://admissions.nic.in/admiss/admissions/counselling_admissions?stream=eng ",
+"https://admissions.nic.in/admiss/admissions/counselling_admissions?stream=medi",
+"https://admissions.nic.in/admiss/admissions/counselling_admissions?stream=other",
+"https://careers.ntpc.co.in/recruitment/",
+"https://iafrecruitment.edcil.co.in/agniveervayu/",
+"https://www.isro.gov.in/SACRecruitment20.html",
+"https://opportunities.rbi.org.in/scripts/vacancies.aspx",
+"https://nests.tribal.gov.in/show_content.php?lang=1&level=1&ls_id=544&lid=119",
+"https://nests.tribal.gov.in/show_content.php?lang=1&level=1&ls_id=543&lid=148",
+"https://iocl.com/apprenticeships",
+"https://iocl.com/latest-job-opening",
+"https://ncert.nic.in/vacancies.php?ln=en",
+
+#Railway
 "https://rrbahmedabad.gov.in/recruitment-statistics/",
 "https://rrbajmer.gov.in/CenDetails?CEN=Ooc3BlDvsFno9roRQOw73Q%253d%253d",
 "https://rrbald.gov.in/",
@@ -29,11 +49,18 @@ urls = [
 "https://www.rrbsiliguri.gov.in/",
 "https://www.rrbthiruvananthapuram.gov.in/",
 "https://indianrailways.gov.in/railwayboard/view_section.jsp?lang=0&id=0,7,1281",
-"https://portal-psc.ap.gov.in/",
-"https://portal-psc.ap.gov.in/HomePages/RecruitmentNotifications",
+
+#Arunachal Pradesh
 "arunachalpradesh.gov.in",
 #Banking
 "https://www.ibps.in/index.php/crp-updates/",
+"https://pnb.bank.in/recruitments.aspx",
+"https://bankofbaroda.bank.in/career/current-opportunities",
+"https://centralbank.bank.in/en/recruitments",
+
+#hospital
+"https://www.drrmlims.ac.in/recruitment",
+
 #Navodaya
 "https://cbseitms.rcil.gov.in/nvs/",
 #PSU_websites
@@ -42,6 +69,10 @@ urls = [
 "https://www.icmr.gov.in/employment-opportunities",
 "https://www.iittp.ac.in/recruitment",
 "https://www.ibps.in/index.php/crp-updates/",
+"https://www.npcilcareers.co.in/MainSiten/default.aspx",
+"https://www.sci.gov.in/recruitments/",
+"https://orientalinsurance.org.in/careers",
+"https://www.oil-india.com/advertisement-list",
 #Andhra_pradesh
 "https://aphc.gov.in/recruitments.php",
 "https://portal-psc.ap.gov.in/",
@@ -68,6 +99,7 @@ urls = [
 "https://btsc.bihar.gov.in/latest-update",
 "https://shs.bihar.gov.in/NoticeBoard",
 "https://shs.bihar.gov.in/Advertisement",
+"https://bssc.bihar.gov.in/NoticeBoard.htm",
     
 #chattisgarh
 "https://erojgar.cg.gov.in/LandingSite/en/Dist_Recruitments.aspx",
@@ -111,6 +143,7 @@ urls = [
 "https://kawardha.gov.in/en/notice_category/recruitment/",
 #Delhi
 "https://dsssb.delhi.gov.in/notifications",
+"https://delhipolice.gov.in/recruitments",
 #Goa
 "https://www.goa.gov.in/citizen/recruitment/",
 "https://goaonline.gov.in/Appln/Uil/DeptServices?__DocId=LEM&__ServiceId=LEM09",
@@ -118,12 +151,21 @@ urls = [
 #Gujrat
 "https://ojas.gujarat.gov.in/AdvtList.aspx?type=lCxUjNjnTp8=",
 "https://services.india.gov.in/service/detail/online-job-application-system-gujarat",
+"https://gsssb.gujarat.gov.in/ExamCategoryDetails/cqAQSGndT4su5PCjskZ32g%E2%99%AC%E2%99%AC",
 #Haryana
 "https://hkrnl.itiharyana.gov.in/VacantJobs",
 "https://nhmharyana.gov.in/page?id=37",
 "https://haryanahealth.gov.in/notice-category/recruitments/",
 "https://advocategeneralhry.gov.in/announcementsadvertisments",
 "https://hpsc.gov.in/en-us/Instructions",
+"https://hssc.gov.in/advertisement",
+"https://hssc.gov.in/result",
+"https://hisar.dcourts.gov.in/notice-category/recruitments/",
+"https://chandigarhpolice.gov.in/recruitment.html",
+"https://rohtak.dcourts.gov.in/notice-category/recruitments/",
+"https://faridabad.dcourts.gov.in/notice-category/recruitments/",
+"https://gurugram.dcourts.gov.in/notice-category/recruitments/",
+"https://sonepat.dcourts.gov.in/notice-category/recruitments/",
 #Himachal Pradesh
 "https://himachal.nic.in/en-IN/vacancies.html",
 "http://www.hppsc.hp.gov.in/hppsc/content/Index/?qlid=12&Ls_is=15&lngid=1",
@@ -143,6 +185,7 @@ urls = [
 #karnatak
 "https://kpsc.kar.nic.in/",
 "https://ksp.karnataka.gov.in/info-3/Recruitment/en",
+"https://www.nimhans.ac.in/announcements/nimhans-recruitment-and-notifications-announcement",
 #Keral
 "https://www.keralapsc.gov.in/notifications",
 "https://jobs.kpesrb.kerala.gov.in/index.php/LatestNotifications",
@@ -154,6 +197,7 @@ urls = [
 "https://esb.mp.gov.in/e_default.html",
 "https://pam.mp.gov.in/career/archive/",
 "https://iforms.mponline.gov.in/",
+"https://esb.mp.gov.in/e_default.html",
 #Maharashtra
 "https://mpsc.gov.in/adv_notification/8",
 "https://www.maharashtra.gov.in/Site/1548/Jobs",
@@ -165,7 +209,6 @@ urls = [
 "https://mpscmanipur.gov.in/examination.html",
 "https://mpscmanipur.gov.in/Exam_concluded.html",
 "https://affairscloud.com/jobs/manipur-govt-job/",
-"https://linkingsky.com/government-exams/government-jobs-in-manipur.html",
 "https://manipurtourism.gov.in/recruitment/",
 #Meghalaya
 "https://mpsc.nic.in/advertisements.html",
@@ -197,6 +240,7 @@ urls = [
 "https://punjab.gov.in/impnotifications/",
 "https://www.pspcl.in/Recruitment",
 "https://www.punjabpolice.gov.in/Recruitment25.aspx",
+"https://iimamritsar.ac.in/quick-links/careers",
 #Rajasthan
 "https://recruitment.rajasthan.gov.in/recruitmentservlet",
 "https://rpsc.rajasthan.gov.in/advertisements",
@@ -204,6 +248,7 @@ urls = [
 "https://rpsc.rajasthan.gov.in/results",
 "https://rpsc.rajasthan.gov.in/downloads",
 "https://police.rajasthan.gov.in/portal/RecruitmentsResults",
+"https://rssb.rajasthan.gov.in/news",
 #Sikkim
 "https://spsc.sikkim.gov.in/Advertisement.html",
 "https://spsc.sikkim.gov.in/Notices.html",
@@ -235,7 +280,6 @@ urls = [
 "https://uppsc.up.nic.in/CandidatePages/Notifications.aspx",
 "https://uppsc.up.nic.in/Default.aspx",
 "https://sewayojan.up.nic.in/jobs.aspx",
-"https://www.upcareers.in/up-govt-jobs/",
 "https://upsssc.gov.in/News.aspx?id=1",
 "https://upsssc.gov.in/AllNotifications.aspx",
 "https://upsssc.gov.in/Default.aspx",
@@ -245,6 +289,11 @@ urls = [
 "https://uppbpb.gov.in/Home/DirectRecruitment",
 "https://uppbpb.gov.in/Home/Result",
 "https://dgme.up.gov.in/Welcome/recruitement",
+"https://upnrhm.gov.in/Home/Opportunities",
+"https://bujhansi.ac.in/upbedjee.html",
+"https://bujhansi.ac.in/en/feature/current-openings.html",
+"https://cdn3.digialm.com/per/g21/pub/1936/ASM/WebPortal/19/index.html?1936@@19@@1",
+"https://uptac.admissions.nic.in/news-events/",
 #Uttarakhand
 "https://ukpsc.net.in/",
 "https://psc.uk.gov.in/candidate-corner/recruitment",
@@ -292,7 +341,3 @@ urls = [
 "https://lakshadweeppolice.gov.in/recruitment",
 "https://lakshadweep.gov.in/notice/recruitment"
 ]
-
-
-
-
