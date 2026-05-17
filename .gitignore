@@ -1,0 +1,20 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.venv/
+venv/
+env/
+
+# Local secrets/config
+config.env
+*.env
+
+# Local runtime data
+notifications.db
+sent_history.json
+processed_history.json
+sent_links.txt
+sent_links.txt.bak
+sent_posts.txt
+

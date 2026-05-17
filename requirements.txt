@@ -1,0 +1,6 @@
+aiohttp
+beautifulsoup4
+python-dotenv
+dateparser
+lxml
+google-generativeai
