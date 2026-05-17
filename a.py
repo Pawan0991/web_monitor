@@ -23,6 +23,8 @@ def load_url_list(urls_py_path):
     src = open(urls_py_path, "r", encoding="utf-8", errors="replace").read()
     tree = ast.parse(src, filename="urls.py")
     for node in tree.body:
+        if isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name) and node.target.id == "URL_LIST":
+            return ast.literal_eval(node.value), None
         if isinstance(node, ast.Assign):
             for target in node.targets:
                 if isinstance(target, ast.Name) and target.id == "URL_LIST":
@@ -227,6 +229,7 @@ async def send_telegram_text(session, text):
     if not ENABLE_TELEGRAM:
         return
     if not BOT_TOKEN or not CHAT_ID:
+        logging.warning("⚠️ Telegram enabled but BOT_TOKEN/CHAT_ID not set.")
         return
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
     payload = {"chat_id": CHAT_ID, "text": text}
@@ -362,10 +365,14 @@ async def process_url(sem, session, url, processed_hashes, date_counters, counte
                         container = item
                     
                     if not link_tag:
+                        async with counters_lock:
+                            run_stats["skipped_no_link"] += 1
                         continue
                     
                     href = link_tag.get("href")
                     if not href or href.startswith(('#', 'javascript', 'mailto')):
+                        async with counters_lock:
+                            run_stats["skipped_invalid_href"] += 1
                         continue
                     
                     full_link = urljoin(url, href)
@@ -450,6 +457,8 @@ async def process_url(sem, session, url, processed_hashes, date_counters, counte
                         
                         fingerprint = make_fingerprint(title, f_date, full_link)
                         if fingerprint in processed_hashes:
+                            async with counters_lock:
+                                run_stats["skipped_duplicate"] += 1
                             continue
                         
                         domain = urlparse(url).netloc.replace("www.", "")
@@ -462,14 +471,23 @@ async def process_url(sem, session, url, processed_hashes, date_counters, counte
                         if saved:
                             async with counters_lock:
                                 date_counters[date_display] = date_counters.get(date_display, 0) + 1
+                                run_stats["db_saved"] += 1
+                        else:
+                            async with counters_lock:
+                                run_stats["skipped_php_fail"] += 1
                         
                         processed_hashes.add(fingerprint)
                         save_to_history(fingerprint)
                         found_count += 1
+                    else:
+                        async with counters_lock:
+                            run_stats["skipped_filtered"] += 1
 
                 logging.info(f"✅ [DONE] {url} (New: {found_count})")
 
         except Exception as e:
+            async with counters_lock:
+                run_stats["errors"] += 1
             pass
 
 # --- MAIN ---
@@ -485,9 +503,19 @@ async def main():
     connector = aiohttp.TCPConnector(limit=100)
     date_counters = {}
     counters_lock = asyncio.Lock()
+    global run_stats
+    run_stats = {
+        "db_saved": 0,
+        "skipped_duplicate": 0,
+        "skipped_php_fail": 0,
+        "skipped_filtered": 0,
+        "skipped_no_link": 0,
+        "skipped_invalid_href": 0,
+        "errors": 0,
+    }
 
     async with aiohttp.ClientSession(connector=connector) as session:
-        await send_telegram_text(session, "🚀 Monitor Started")
+        await send_telegram_text(session, "✅ Website monitor started.")
         try:
             tasks = []
             for url in URL_LIST:
@@ -496,6 +524,7 @@ async def main():
         finally:
             async with counters_lock:
                 items = list(date_counters.items())
+                stats_snapshot = dict(run_stats)
 
             total_saved = sum(c for _, c in items)
             if items:
@@ -508,9 +537,22 @@ async def main():
 
                 items.sort(key=_sort_key)
                 by_date = "\n".join([f"{d}: {c}" for d, c in items])
-                msg = f"✅ Monitor Finished\n\nDB Saved: {total_saved}\n\nBy Date:\n{by_date}"
+                msg = (
+                    "✅ Website monitor finished.\n\n"
+                    f"DB saved: {stats_snapshot.get('db_saved', 0)}\n"
+                    f"Skipped (duplicate): {stats_snapshot.get('skipped_duplicate', 0)} (already sent earlier)\n"
+                    f"Skipped (filtered): {stats_snapshot.get('skipped_filtered', 0)} (didn't match rules/keywords/date)\n"
+                    f"Skipped (webhook failed): {stats_snapshot.get('skipped_php_fail', 0)} (server returned error)\n\n"
+                    f"Saved by date:\n{by_date}"
+                )
             else:
-                msg = "✅ Monitor Finished\n\nDB Saved: 0"
+                msg = (
+                    "✅ Website monitor finished.\n\n"
+                    f"DB saved: {stats_snapshot.get('db_saved', 0)}\n"
+                    f"Skipped (duplicate): {stats_snapshot.get('skipped_duplicate', 0)}\n"
+                    f"Skipped (filtered): {stats_snapshot.get('skipped_filtered', 0)}\n"
+                    f"Skipped (webhook failed): {stats_snapshot.get('skipped_php_fail', 0)}\n"
+                )
             await send_telegram_text(session, msg)
     print("--- [FINISHED] ---")
 
