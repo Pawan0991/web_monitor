@@ -295,6 +295,7 @@ URL_LIST = [
 "https://bujhansi.ac.in/en/feature/current-openings.html",
 "https://cdn3.digialm.com/per/g21/pub/1936/ASM/WebPortal/19/index.html?1936@@19@@1",
 "https://uptac.admissions.nic.in/news-events/",
+"https://mjpru.ac.in/vacancy.aspx",
 #Uttarakhand
 "https://ukpsc.net.in/",
 "https://psc.uk.gov.in/candidate-corner/recruitment",
